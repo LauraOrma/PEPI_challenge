@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Poker</title>
+</head>
+<body>
+<script type="text/javascript" src="Classes/City.js" charset="UTF-8"></script>
+<script>
+    
+    function getBestPosibility(p) {
+        let bestPosibility;
+        
+        // I declare very high variables so that they decrease with the real values
+        var bestReward = -9999999;
+        var lowestCost = 9999999;
+
+        for (let i = 0; i < p.length; i++) {
+            let winnedRewards = [];
+            let reward = 0;
+            let cost = 0;
+            for (let j = 0; j < p[i].length; j++) {
+                if (!winnedRewards.includes(p[i][j].name)) {
+                    winnedRewards.push(p[i][j].name);
+                    reward += parseInt(p[i][j].reward);
+                }
+                if (j > 0) {
+                    let lastCost = p[i][j - 1].to.find(obj => {
+                        return obj[0] === p[i][j].name
+                    })[1];
+                    cost += parseInt(lastCost);
+                }
+            }
+
+           // The best route is the one that generates more money, so I take into account the prize of the city and what it costs to go to it
+
+            if (parseInt(bestReward) < (reward - cost) || parseInt(bestReward) <= (reward - cost) && parseInt(lowestCost) < (cost)) {
+                bestReward = reward - cost;
+                lowestCost = cost;
+                
+                bestPosibility = p[i];
+                console.log("I: " + i + " BestReward: " + bestReward + " Reward: " + reward + " Cost: " + cost + " LowestCost: " + lowestCost + " RC: " + (reward - cost));
+            }
+
+        }
+
+        return bestPosibility;
+    }
+
+  // Here I declare cities and connections JSONs  
+
+    let json =
+        '{ "cities": [ { "name": "Madrid", "base": true, "reward": 0 }, { "name": "London", "reward": 47 }, { "name": "Paris", "reward": 52 }, { "name": "Rome", "reward": 35 }, { "name": "Berlin", "reward": 18 }, { "name": "Warsaw", "reward": 22 }, { "name": "Bucharest", "reward": 11 }, { "name": "Kyiv", "reward": 9 }, { "name": "Moscow", "reward": 50 } ], "connections": [ { "from": "Madrid", "to": "London", "cost": 12 }, { "from": "Madrid", "to": "Paris", "cost": 12 }, { "from": "Madrid", "to": "Rome", "cost": 15 }, { "from": "Paris", "to": "London", "cost": 6 }, { "from": "Paris", "to": "Berlin", "cost": 15 }, { "from": "Berlin", "to": "Rome", "cost": 7 }, { "from": "Berlin", "to": "Warsaw", "cost": 12 }, { "from": "Rome", "to": "Bucharest", "cost": 15 }, { "from": "Warsaw", "to": "Kyiv", "cost": 5 }, { "from": "Bucharest", "to": "Kyiv", "cost": 5 }, { "from": "London", "to": "Moscow", "cost": 39 }, { "from": "Kyiv", "to": "Moscow", "cost": 12 } ]}';
+    let data = JSON.parse(json);
+
+    let cities = [];
+    for (let i = 0; i < data["cities"].length; i++) {
+        cities.push(new City(data["cities"][i].name, parseInt(data["cities"][i].reward), data["cities"][i].base))
+    }
+    for (let i = 0; i < cities.length; i++) {
+        for (let j = 0; j < data["connections"].length; j++) {
+            if (cities[i].name === data["connections"][j].from) {
+                cities[i].to.push([data["connections"][j].to, data["connections"][j].cost]);
+            }
+            if (cities[i].name === data["connections"][j].to) {
+                cities[i].to.push([data["connections"][j].from, data["connections"][j].cost]);
+            }
+        }
+    }
+    let posibilities = [];
+
+    let base = cities.find(obj => {
+        return obj.base === true
+    });
+
+// if dest6 is not Madrid, we reject the answer because we are only interested in the routes that start and end in Madrid
+
+    for (let i = 0; i < base.to.length; i++) { // first route (example: Madrid(base) to Paris)
+        let dest1 = cities.find(obj => {
+            return obj.name === base.to[i][0];
+        });
+        for (let i = 0; i < dest1.to.length; i++) { // second skip
+            let dest2 = cities.find(obj => {
+                return obj.name === dest1.to[i][0];
+            });
+            for (let i = 0; i < dest2.to.length; i++) { // third skip
+                let dest3 = cities.find(obj => {
+                    return obj.name === dest2.to[i][0];
+                });
+                for (let i = 0; i < dest3.to.length; i++) { // 4th skip
+                    let dest4 = cities.find(obj => {
+                        return obj.name === dest3.to[i][0];
+                    });
+                    for (let i = 0; i < dest3.to.length; i++) { // 5th skip
+                        let dest4 = cities.find(obj => {
+                            return obj.name === dest3.to[i][0];
+                        });
+                        for (let i = 0; i < dest4.to.length; i++) { // 6th skip
+                            let dest5 = cities.find(obj => {
+                                return obj.name === dest4.to[i][0];
+                            });
+                            for (let i = 0; i < dest5.to.length; i++) { // 7th skip (return to Madrid (base)
+                                let dest6 = cities.find(obj => {
+                                    return obj.name === dest5.to[i][0];
+                                });
+                                if (dest6.base) {
+                                    posibilities.push([base, dest1, dest2, dest3, dest4, dest5, dest6])
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    console.log(getBestPosibility(posibilities));
+</script>
+</body>
+</html>
